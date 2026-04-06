@@ -33,13 +33,14 @@
     const ctx = getAudioContext();
     const now = ctx.currentTime;
     const notes = [523.25, 659.25, 783.99, 1046.5];
+    const peak = 0.38;
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
       osc.frequency.setValueAtTime(freq, now + i * 0.12);
       gain.gain.setValueAtTime(0, now + i * 0.12);
-      gain.gain.linearRampToValueAtTime(0.18, now + i * 0.12 + 0.02);
+      gain.gain.linearRampToValueAtTime(peak, now + i * 0.12 + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.35);
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -48,20 +49,33 @@
     });
   }
 
+  /** Three descending “wah” sweeps (sad trombone style). */
   function playBuzzer() {
     const ctx = getAudioContext();
     const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(120, now);
-    osc.frequency.exponentialRampToValueAtTime(80, now + 0.25);
-    gain.gain.setValueAtTime(0.12, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.3);
+    const wahCount = 3;
+    const wahDuration = 0.48;
+    const gap = 0.08;
+    const peak = 0.42;
+    const fHi = 420;
+    const fLo = 85;
+
+    for (let w = 0; w < wahCount; w++) {
+      const t0 = now + w * (wahDuration + gap);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(fHi, t0);
+      osc.frequency.exponentialRampToValueAtTime(fLo, t0 + wahDuration);
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(peak, t0 + 0.05);
+      gain.gain.linearRampToValueAtTime(peak * 0.88, t0 + wahDuration * 0.45);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + wahDuration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + wahDuration + 0.03);
+    }
   }
 
   /**
