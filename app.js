@@ -432,7 +432,7 @@
       return;
     }
     progressBarWrap.hidden = false;
-    resetProgressBtn.hidden = index >= items.length;
+    resetProgressBtn.hidden = false;
     const pct = progressPercent();
     progressFill.style.width = pct + "%";
     progressTrack.setAttribute("aria-valuenow", String(pct));
