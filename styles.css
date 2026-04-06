@@ -281,6 +281,98 @@ body.shake {
   }
 }
 
+.question.finale-location {
+  font-size: clamp(1.5rem, 5.5vw, 2.75rem);
+  color: #fde68a;
+  text-shadow: 0 0 40px rgba(251, 191, 36, 0.35);
+  animation: finale-glow 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes finale-glow {
+  from {
+    filter: brightness(1);
+  }
+  to {
+    filter: brightness(1.12);
+  }
+}
+
+/* Full-screen finale: ticker tape + fireworks */
+.finale-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  overflow: hidden;
+}
+
+.finale-overlay[hidden] {
+  display: none !important;
+}
+
+.finale-overlay.is-active {
+  display: block;
+}
+
+.finale-ticker-piece {
+  position: absolute;
+  top: -2rem;
+  width: 0.45rem;
+  height: 2.2rem;
+  border-radius: 2px;
+  opacity: 0.92;
+  animation: ticker-fall linear forwards;
+}
+
+@keyframes ticker-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg);
+  }
+}
+
+.finale-firework {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: fw-rocket 0.55s ease-out forwards;
+}
+
+@keyframes fw-rocket {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0.85;
+    transform: var(--fw-drift);
+  }
+}
+
+.finale-spark {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  margin-top: -2.5px;
+  border-radius: 50%;
+  animation: fw-spark 0.9s ease-out forwards;
+}
+
+@keyframes fw-spark {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: var(--spark-drift) scale(0.2);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   body.shake {
     animation: none;
@@ -294,6 +386,17 @@ body.shake {
   .celebration.is-active .particle {
     animation: none;
     opacity: 0;
+  }
+
+  .question.finale-location {
+    animation: none;
+  }
+
+  .finale-ticker-piece,
+  .finale-firework,
+  .finale-spark {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 
   @keyframes celebrate-reduced {
