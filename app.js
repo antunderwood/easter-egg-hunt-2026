@@ -132,6 +132,42 @@
     return s.trim().replace(/\s+/g, " ").toLowerCase();
   }
 
+  /**
+   * If the CSV answer is two numbers separated by -, –, or —, treat as an inclusive numeric range.
+   * Example: "1-10", "3.5 – 4.5"
+   * @param {string} answerTrimmed expected answer, already .trim()
+   * @returns {{ min: number, max: number } | null}
+   */
+  function parseNumericRange(answerTrimmed) {
+    const m = answerTrimmed.match(
+      /^(-?\d+(?:\.\d+)?)\s*[-\u2013\u2014]\s*(-?\d+(?:\.\d+)?)$/
+    );
+    if (!m) return null;
+    const a = parseFloat(m[1]);
+    const b = parseFloat(m[2]);
+    if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+    return { min: Math.min(a, b), max: Math.max(a, b) };
+  }
+
+  /** Strict single number for user input when the expected answer is a range. */
+  function parseStrictUserNumber(s) {
+    const u = s.trim();
+    if (!/^[-+]?(?:\d+\.?\d*|\.\d+)$/.test(u)) return NaN;
+    const n = parseFloat(u);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  function answerMatches(expectedRaw, userRaw) {
+    const trimmedExpected = expectedRaw.trim();
+    const range = parseNumericRange(trimmedExpected);
+    if (range) {
+      const n = parseStrictUserNumber(userRaw);
+      if (Number.isNaN(n)) return false;
+      return n >= range.min && n <= range.max;
+    }
+    return normalizeAnswer(expectedRaw) === normalizeAnswer(userRaw);
+  }
+
   /** Fingerprint quiz content so we do not restore the wrong index after CSV edits. */
   function quizSignature(list) {
     let h = 5381;
@@ -294,10 +330,7 @@
     if (busy || index >= items.length) return;
 
     const raw = answerInput.value;
-    const expected = normalizeAnswer(items[index].answer);
-    const got = normalizeAnswer(raw);
-
-    if (got !== expected) {
+    if (!answerMatches(items[index].answer, raw)) {
       try {
         await getAudioContext().resume();
       } catch (_) {}
